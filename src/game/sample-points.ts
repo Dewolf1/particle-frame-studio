@@ -57,7 +57,6 @@ export function sampleSurfacePoints(root: THREE.Object3D, count: number, targetS
       a.fromBufferAttribute(pos, i);
       b.fromBufferAttribute(pos, i + 1);
       c.fromBufferAttribute(pos, i + 2);
-      area += tmp.getSpan? 0 : 0;
       area += new THREE.Triangle(a, b, c).getArea();
     }
     return Math.max(area, 1e-6);
