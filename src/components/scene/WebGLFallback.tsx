@@ -20,11 +20,11 @@ interface CanvasBoundaryProps {
 export class CanvasBoundary extends Component<CanvasBoundaryProps, { failed: boolean }> {
   state = { failed: false };
 
-  static getDerivedStateFromError() {
+  static override getDerivedStateFromError() {
     return { failed: true };
   }
 
-  render() {
+  override render() {
     return this.state.failed ? this.props.fallback : this.props.children;
   }
 }
