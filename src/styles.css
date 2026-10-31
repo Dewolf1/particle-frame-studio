@@ -173,6 +173,21 @@
   animation: rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* CSS-only stand-in for the WebGL hero when the device has no GPU context. */
+@utility hero-glow {
+  background:
+    radial-gradient(
+      ellipse 55% 42% at 50% 46%,
+      color-mix(in oklab, var(--accent) 22%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 85% 65% at 50% 50%,
+      color-mix(in oklab, var(--muted-foreground) 14%, transparent),
+      transparent 78%
+    );
+}
+
 /* Keeps copy legible where it crosses the bright particle cloud. */
 .vignette p,
 .vignette h1,
