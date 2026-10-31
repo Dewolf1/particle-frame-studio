@@ -1,6 +1,7 @@
-import { Suspense, useCallback, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { CameraParticles } from "@/components/scene/CameraParticles";
+import { CanvasBoundary, supportsWebGL } from "@/components/scene/WebGLFallback";
 import type { ParticlePhase, ParticleSim } from "@/game/particle-sim";
 import work1 from "@/assets/work-1.jpg";
 import work2 from "@/assets/work-2.jpg";
@@ -63,9 +64,17 @@ export default function PortfolioPage() {
     setReady(true);
   }, []);
 
+  const [webgl, setWebgl] = useState(true);
+  useEffect(() => {
+    if (!supportsWebGL()) {
+      setWebgl(false);
+      handleReady();
+    }
+  }, [handleReady]);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 md:px-12">
+      <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-gradient-to-b from-background via-background/60 to-transparent px-6 py-5 md:px-12">
         <a href="#" className="font-display text-xl tracking-wide">
           Lumen<span className="text-accent">.</span>
         </a>
@@ -90,16 +99,24 @@ export default function PortfolioPage() {
           ref={stageRef}
           className={`absolute inset-0 transition-opacity duration-1000 ${ready ? "opacity-100" : "opacity-0"}`}
         >
-          <Canvas
-            flat
-            dpr={[1, 2]}
-            camera={{ position: [0, 0, 3.1], fov: 42 }}
-            gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-          >
-            <Suspense fallback={null}>
-              <CameraParticles onSim={handleSim} onReady={handleReady} />
-            </Suspense>
-          </Canvas>
+          {webgl ? (
+            <CanvasBoundary
+              fallback={<div className="hero-glow absolute inset-0" aria-hidden />}
+            >
+              <Canvas
+                flat
+                dpr={[1, 2]}
+                camera={{ position: [0, 0, 3.1], fov: 42 }}
+                gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+              >
+                <Suspense fallback={null}>
+                  <CameraParticles onSim={handleSim} onReady={handleReady} />
+                </Suspense>
+              </Canvas>
+            </CanvasBoundary>
+          ) : (
+            <div className="hero-glow absolute inset-0" aria-hidden />
+          )}
         </div>
 
         <div className="pointer-events-none relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">

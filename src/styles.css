@@ -142,3 +142,91 @@
     color: var(--color-foreground);
   }
 }
+
+/* ============ Lumen Studio design layer ============ */
+
+@theme {
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* The whole site is dark; the highlight matches the hero's amber light
+   particles so type and scene share one palette. */
+.dark {
+  --accent: oklch(0.8 0.13 75);
+  --accent-foreground: oklch(0.18 0.04 60);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-rise {
+  opacity: 0;
+  animation: rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* CSS-only stand-in for the WebGL hero when the device has no GPU context. */
+@utility hero-glow {
+  background:
+    radial-gradient(
+      ellipse 55% 42% at 50% 46%,
+      color-mix(in oklab, var(--accent) 22%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 85% 65% at 50% 50%,
+      color-mix(in oklab, var(--muted-foreground) 14%, transparent),
+      transparent 78%
+    );
+}
+
+/* Keeps copy legible where it crosses the bright particle cloud. */
+.vignette p,
+.vignette h1,
+.vignette span {
+  text-shadow: 0 0 18px var(--background), 0 0 40px var(--background);
+}
+
+/* Darkened edges behind the WebGL hero; sits under the z-10 copy. */
+@utility vignette {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 78% 68% at 50% 45%,
+      transparent 48%,
+      color-mix(in oklab, var(--background) 74%, transparent) 100%
+    );
+  }
+}
+
+@keyframes scroll-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@utility scroll-line {
+  display: block;
+  width: 1px;
+  height: 44px;
+  transform-origin: top;
+  background: linear-gradient(to bottom, transparent, var(--color-muted-foreground));
+  animation: scroll-pulse 2.2s ease-in-out infinite;
+}

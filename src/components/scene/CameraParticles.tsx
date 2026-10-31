@@ -79,6 +79,19 @@ export function CameraParticles({ onSim, onReady }: CameraParticlesProps) {
     return g;
   }, [sim]);
 
+  const uniforms = useMemo(
+    () => ({
+      uSize: { value: 0.011 },
+      uScale: { value: 600 },
+      uTime: { value: 0 },
+      uScroll: { value: 0 },
+      uFade: { value: 0 },
+      uColA: { value: new THREE.Color(1.0, 0.98, 0.93) },
+      uColB: { value: new THREE.Color(1.0, 0.66, 0.32) },
+    }),
+    [],
+  );
+
   const material = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -87,17 +100,9 @@ export function CameraParticles({ onSim, onReady }: CameraParticlesProps) {
         transparent: true,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
-        uniforms: {
-          uSize: { value: 0.011 },
-          uScale: { value: 600 },
-          uTime: { value: 0 },
-          uScroll: { value: 0 },
-          uFade: { value: 0 },
-          uColA: { value: new THREE.Color(1.0, 0.98, 0.93) },
-          uColB: { value: new THREE.Color(1.0, 0.66, 0.32) },
-        },
+        uniforms,
       }),
-    [],
+    [uniforms],
   );
 
   useEffect(() => {
@@ -114,7 +119,7 @@ export function CameraParticles({ onSim, onReady }: CameraParticlesProps) {
     sim.update(delta);
     (geometry.getAttribute("position") as THREE.BufferAttribute).needsUpdate = true;
 
-    const u = material.uniforms;
+    const u = uniforms;
     u.uTime.value = sim.time;
     u.uScale.value = state.size.height * 0.5 * state.viewport.dpr;
     const explodeFade =
