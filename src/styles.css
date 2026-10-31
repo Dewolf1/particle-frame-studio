@@ -173,6 +173,13 @@
   animation: rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Keeps copy legible where it crosses the bright particle cloud. */
+.vignette p,
+.vignette h1,
+.vignette span {
+  text-shadow: 0 0 18px var(--background), 0 0 40px var(--background);
+}
+
 /* Darkened edges behind the WebGL hero; sits under the z-10 copy. */
 @utility vignette {
   &::after {
