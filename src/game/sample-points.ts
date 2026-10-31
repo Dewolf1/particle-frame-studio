@@ -67,15 +67,15 @@ export function sampleSurfacePoints(root: THREE.Object3D, count: number, targetS
   let written = 0;
   let largest = 0;
   const counts = parts.map((_, i) => {
-    if (areas[i] > areas[largest]) largest = i;
-    return Math.floor((count * areas[i]) / total);
+    if (areas[i]! > areas[largest]!) largest = i;
+    return Math.floor((count * areas[i]!) / total);
   });
-  counts[largest] += count - counts.reduce((s, x) => s + x, 0);
+  counts[largest]! += count - counts.reduce((s, x) => s + x, 0);
 
   parts.forEach((geo, i) => {
     const mesh = new THREE.Mesh(geo);
     const sampler = new MeshSurfaceSampler(mesh).build();
-    for (let k = 0; k < counts[i] && written < count; k++) {
+    for (let k = 0; k < counts[i]! && written < count; k++) {
       sampler.sample(v);
       positions[written * 3] = v.x;
       positions[written * 3 + 1] = v.y;
@@ -86,9 +86,9 @@ export function sampleSurfacePoints(root: THREE.Object3D, count: number, targetS
   // Guarantee the full count even if rounding came up short.
   while (written < count) {
     const src = Math.floor(Math.random() * written) * 3;
-    positions[written * 3] = positions[src];
-    positions[written * 3 + 1] = positions[src + 1];
-    positions[written * 3 + 2] = positions[src + 2];
+    positions[written * 3] = positions[src]!;
+    positions[written * 3 + 1] = positions[src + 1]!;
+    positions[written * 3 + 2] = positions[src + 2]!;
     written++;
   }
 
@@ -96,7 +96,7 @@ export function sampleSurfacePoints(root: THREE.Object3D, count: number, targetS
   for (let i = 0; i < count; i++) {
     maxRadius = Math.max(
       maxRadius,
-      Math.hypot(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]),
+      Math.hypot(positions[i * 3]!, positions[i * 3 + 1]!, positions[i * 3 + 2]!),
     );
   }
 

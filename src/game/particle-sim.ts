@@ -105,14 +105,14 @@ export class ParticleSim {
     const { pos, vel, dirs, count } = this;
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      const px = pos[i3];
-      const py = pos[i3 + 1];
-      const pz = pos[i3 + 2];
+      const px = pos[i3]!;
+      const py = pos[i3 + 1]!;
+      const pz = pos[i3 + 2]!;
       const rl = Math.hypot(px, py, pz) + 1e-5;
       const b = FEEL.radialBias;
-      let dx = dirs[i3] * (1 - b) + (px / rl) * b;
-      let dy = dirs[i3 + 1] * (1 - b) + (py / rl) * b;
-      let dz = dirs[i3 + 2] * (1 - b) + (pz / rl) * b;
+      let dx = dirs[i3]! * (1 - b) + (px / rl) * b;
+      let dy = dirs[i3 + 1]! * (1 - b) + (py / rl) * b;
+      let dz = dirs[i3 + 2]! * (1 - b) + (pz / rl) * b;
       const dl = Math.hypot(dx, dy, dz) + 1e-5;
       const speed = FEEL.burstSpeed * (0.35 + FEEL.burstSpread * Math.random());
       vel[i3] = (dx / dl) * speed;
@@ -161,12 +161,12 @@ export class ParticleSim {
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      let px = pos[i3];
-      let py = pos[i3 + 1];
-      let pz = pos[i3 + 2];
-      let vx = vel[i3];
-      let vy = vel[i3 + 1];
-      let vz = vel[i3 + 2];
+      let px = pos[i3]!;
+      let py = pos[i3 + 1]!;
+      let pz = pos[i3 + 2]!;
+      let vx = vel[i3]!;
+      let vy = vel[i3 + 1]!;
+      let vz = vel[i3 + 2]!;
 
       if (exploded) {
         // Cheap pseudo-turbulence field, drifting embers rather than debris.
@@ -180,11 +180,11 @@ export class ParticleSim {
         px += vx * dt;
         py += vy * dt;
         pz += vz * dt;
-      } else if (this.phase === "idle" || assembleTime - delay[i] > 0) {
-        const s = seed[i] * TAU;
-        vx += (home[i3] - px) * spring * dt + Math.sin(t * wf * 1.7 + s) * wob * dt;
-        vy += (home[i3 + 1] - py) * spring * dt + Math.sin(t * wf * 1.3 + s * 1.7) * wob * dt;
-        vz += (home[i3 + 2] - pz) * spring * dt + Math.sin(t * wf * 2.1 + s * 2.3) * wob * dt;
+      } else if (this.phase === "idle" || assembleTime - delay[i]! > 0) {
+        const s = seed[i]! * TAU;
+        vx += (home[i3]! - px) * spring * dt + Math.sin(t * wf * 1.7 + s) * wob * dt;
+        vy += (home[i3 + 1]! - py) * spring * dt + Math.sin(t * wf * 1.3 + s * 1.7) * wob * dt;
+        vz += (home[i3 + 2]! - pz) * spring * dt + Math.sin(t * wf * 2.1 + s * 2.3) * wob * dt;
         vx *= dampF;
         vy *= dampF;
         vz *= dampF;
