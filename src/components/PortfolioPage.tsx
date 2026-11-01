@@ -1,11 +1,18 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
+import { Instagram } from "lucide-react";
 import { CameraParticles } from "@/components/scene/CameraParticles";
 import { CanvasBoundary, supportsWebGL } from "@/components/scene/WebGLFallback";
 import type { ParticlePhase, ParticleSim } from "@/game/particle-sim";
 import work1 from "@/assets/work-1.jpg";
 import work2 from "@/assets/work-2.jpg";
 import work3 from "@/assets/work-3.jpg";
+import insta1 from "@/assets/insta-1.jpg";
+import insta2 from "@/assets/insta-2.jpg";
+import insta3 from "@/assets/insta-3.jpg";
+
+const INSTAGRAM_URL = "https://instagram.com/lumen.studio";
+const INSTAGRAM_HANDLE = "@lumen.studio";
 
 const NAV_LINKS = [
   { label: "Work", href: "#work" },
@@ -23,6 +30,15 @@ const WORKS = [
   { src: work1, title: "Afterglow", kind: "Portrait — Still" },
   { src: work2, title: "Night Frequency", kind: "Street — Film" },
   { src: work3, title: "On Set", kind: "Behind the Scenes" },
+];
+
+const INSTA_POSTS = [
+  { src: work1, alt: "Studio portrait in amber light" },
+  { src: insta1, alt: "On set with the cinema camera" },
+  { src: insta2, alt: "Dancer in motion blur" },
+  { src: insta3, alt: "Vintage lens catching flares" },
+  { src: work2, alt: "Night street frames" },
+  { src: work3, alt: "Behind the scenes" },
 ];
 
 const SERVICES = [
@@ -88,6 +104,15 @@ export default function PortfolioPage() {
               {l.label}
             </a>
           ))}
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            className="text-muted-foreground transition-colors hover:text-accent"
+          >
+            <Instagram className="size-4" strokeWidth={1.5} />
+          </a>
         </nav>
       </header>
 
@@ -200,6 +225,49 @@ export default function PortfolioPage() {
         </div>
       </section>
 
+      <section id="instagram" className="mx-auto max-w-6xl px-6 pb-4 pt-28 md:px-12">
+        <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground">
+              Instagram
+            </p>
+            <h2 className="mt-4 font-display text-4xl md:text-6xl">Daily frames</h2>
+          </div>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-3 rounded-full border border-border px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] transition-colors hover:border-accent hover:text-accent"
+          >
+            <Instagram className="size-4" strokeWidth={1.5} />
+            {INSTAGRAM_HANDLE}
+          </a>
+        </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-6">
+          {INSTA_POSTS.map((post) => (
+            <a
+              key={post.src}
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="group relative block overflow-hidden rounded-xl border border-border/60 bg-card"
+            >
+              <img
+                src={post.src}
+                alt={post.alt}
+                loading="lazy"
+                width={1024}
+                height={1024}
+                className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <span className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                <Instagram className="size-6 text-accent" strokeWidth={1.5} />
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+
       <section id="services" className="border-y border-border/60 bg-card/40">
         <div className="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-3 md:px-12">
           {SERVICES.map((s) => (
@@ -229,6 +297,17 @@ export default function PortfolioPage() {
       </section>
 
       <footer className="border-t border-border/60 px-6 py-8 text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+        <div className="mb-4 flex justify-center">
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            className="text-muted-foreground transition-colors hover:text-accent"
+          >
+            <Instagram className="size-4" strokeWidth={1.5} />
+          </a>
+        </div>
         © 2026 Lumen Studio — Photography &amp; Film
       </footer>
     </div>
