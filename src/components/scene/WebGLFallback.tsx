@@ -18,9 +18,9 @@ interface CanvasBoundaryProps {
 
 /** Catches WebGL context-creation failures thrown while the Canvas mounts. */
 export class CanvasBoundary extends Component<CanvasBoundaryProps, { failed: boolean }> {
-  state = { failed: false };
+  override state = { failed: false };
 
-  static override getDerivedStateFromError() {
+  static getDerivedStateFromError() {
     return { failed: true };
   }
 
