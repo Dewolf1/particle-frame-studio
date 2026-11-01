@@ -2,6 +2,19 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 
 import { renderErrorPage } from "./lib/error-page";
 
+// Self-heal stale module graphs: when a lazily fetched bundle no longer exists
+// (e.g. after a redeploy or dependency re-optimization), reload once so the
+// browser picks up the fresh graph instead of leaving a blank page.
+if (typeof window !== "undefined") {
+  let reloaded = false;
+  window.addEventListener("vite:preloadError", (event) => {
+    if (reloaded) return;
+    reloaded = true;
+    event.preventDefault();
+    window.location.reload();
+  });
+}
+
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     return await next();
