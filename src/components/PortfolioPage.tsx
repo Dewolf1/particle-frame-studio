@@ -1,11 +1,18 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
+import { Instagram } from "lucide-react";
 import { CameraParticles } from "@/components/scene/CameraParticles";
 import { CanvasBoundary, supportsWebGL } from "@/components/scene/WebGLFallback";
 import type { ParticlePhase, ParticleSim } from "@/game/particle-sim";
 import work1 from "@/assets/work-1.jpg";
 import work2 from "@/assets/work-2.jpg";
 import work3 from "@/assets/work-3.jpg";
+import insta1 from "@/assets/insta-1.jpg";
+import insta2 from "@/assets/insta-2.jpg";
+import insta3 from "@/assets/insta-3.jpg";
+
+const INSTAGRAM_URL = "https://instagram.com/lumen.studio";
+const INSTAGRAM_HANDLE = "@lumen.studio";
 
 const NAV_LINKS = [
   { label: "Work", href: "#work" },
@@ -88,6 +95,15 @@ export default function PortfolioPage() {
               {l.label}
             </a>
           ))}
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            className="text-muted-foreground transition-colors hover:text-accent"
+          >
+            <Instagram className="size-4" strokeWidth={1.5} />
+          </a>
         </nav>
       </header>
 
