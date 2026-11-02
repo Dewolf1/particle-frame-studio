@@ -81,7 +81,7 @@ export function CameraParticles({ onSim, onReady }: CameraParticlesProps) {
 
   const uniforms = useMemo(
     () => ({
-      uSize: { value: 0.011 },
+      uSize: { value: 0.016 },
       uScale: { value: 600 },
       uTime: { value: 0 },
       uScroll: { value: 0 },
@@ -124,7 +124,7 @@ export function CameraParticles({ onSim, onReady }: CameraParticlesProps) {
     u.uScale.value = state.size.height * 0.5 * state.viewport.dpr;
     const explodeFade =
       sim.phase === "exploded"
-        ? 1 - 0.7 * THREE.MathUtils.clamp((sim.explodeAge - 0.35) / 2.4, 0, 1)
+        ? 1 - 0.4 * THREE.MathUtils.clamp((sim.explodeAge - 0.35) / 2.4, 0, 1)
         : 1;
     u.uFade.value = Math.min(1, sim.time / 0.9) * explodeFade;
 

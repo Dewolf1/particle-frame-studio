@@ -13,7 +13,7 @@ export const FEEL = {
   /** Model width after normalization, world units. */
   targetSize: 1.7,
   /** Number of rigid pieces the model breaks into. */
-  pieces: 26,
+  pieces: 16,
   /** Piece drift speed, units/s. */
   pieceSpeed: 0.85,
   pieceSpread: 0.55,
@@ -21,8 +21,11 @@ export const FEEL = {
   radialBias: 0.6,
   /** Piece tumble rate, rad/s. */
   pieceSpin: 1.5,
+  /** Fraction of particles that shed off as loose dust; the rest stay locked
+   *  to their shard so the pieces read as solid fragments. */
+  dustFraction: 0.25,
   /** Dust haze: speed, drag and gravity for the fine particles. */
-  dustSpeed: 0.55,
+  dustSpeed: 1.1,
   dustDrag: 1.8,
   drag: 1.1,
   gravity: -0.12,
@@ -204,7 +207,6 @@ export class ParticleSim {
         }
       }
       this.pieceOf[i] = best;
-      cx[best]! += 0; // keep TS happy; sums below
       cx[best] = cx[best]! + x;
       cy[best] = cy[best]! + y;
       cz[best] = cz[best]! + z;
@@ -298,17 +300,20 @@ export class ParticleSim {
     }
 
     // Dust: offset from the rigid piece position, drifting freely.
+    // A minority of particles shed off as loose dust; the rest stay locked
+    // to their shard so the pieces read as solid fragments.
     for (let i = 0; i < n; i++) {
       const i3 = i * 3;
       dust[i3] = pos[i3]! - home[i3]!;
       dust[i3 + 1] = pos[i3 + 1]! - home[i3 + 1]!;
       dust[i3 + 2] = pos[i3 + 2]! - home[i3 + 2]!;
+      const isDust = this.rand[i]! < FEEL.dustFraction;
       const u = Math.random() * 2 - 1;
       const th = Math.random() * TAU;
       const rr = Math.sqrt(1 - u * u);
-      const sp = FEEL.dustSpeed * (0.2 + Math.random() * 1.1);
+      const sp = isDust ? FEEL.dustSpeed * (0.5 + Math.random() * 0.9) : 0.04 * Math.random();
       dustVel[i3] = rr * Math.cos(th) * sp;
-      dustVel[i3 + 1] = u * sp + 0.15;
+      dustVel[i3 + 1] = u * sp + (isDust ? 0.1 : 0);
       dustVel[i3 + 2] = rr * Math.sin(th) * sp;
       offX[i] = home[i3]! - pieces.cx[this.pieceOf[i]!]!;
       offY[i] = home[i3 + 1]! - pieces.cy[this.pieceOf[i]!]!;
@@ -412,9 +417,9 @@ export class ParticleSim {
         this.dustVel[d3] = this.dustVel[d3]! * dustDragF;
         this.dustVel[d3 + 1] = (this.dustVel[d3 + 1]! + FEEL.gravity * 0.4 * dt) * dustDragF;
         this.dustVel[d3 + 2] = this.dustVel[d3 + 2]! * dustDragF;
-        this.dust[d3] += this.dustVel[d3]! * dt;
-        this.dust[d3 + 1] += this.dustVel[d3 + 1]! * dt;
-        this.dust[d3 + 2] += this.dustVel[d3 + 2]! * dt;
+        this.dust[d3] = this.dust[d3]! + this.dustVel[d3]! * dt;
+        this.dust[d3 + 1] = this.dust[d3 + 1]! + this.dustVel[d3 + 1]! * dt;
+        this.dust[d3 + 2] = this.dust[d3 + 2]! + this.dustVel[d3 + 2]! * dt;
 
         px = pieces.px[p]! + rx + this.dust[d3]!;
         py = pieces.py[p]! + ry + this.dust[d3 + 1]!;
