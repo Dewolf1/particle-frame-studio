@@ -300,17 +300,20 @@ export class ParticleSim {
     }
 
     // Dust: offset from the rigid piece position, drifting freely.
+    // A minority of particles shed off as loose dust; the rest stay locked
+    // to their shard so the pieces read as solid fragments.
     for (let i = 0; i < n; i++) {
       const i3 = i * 3;
       dust[i3] = pos[i3]! - home[i3]!;
       dust[i3 + 1] = pos[i3 + 1]! - home[i3 + 1]!;
       dust[i3 + 2] = pos[i3 + 2]! - home[i3 + 2]!;
+      const isDust = this.rand[i]! < FEEL.dustFraction;
       const u = Math.random() * 2 - 1;
       const th = Math.random() * TAU;
       const rr = Math.sqrt(1 - u * u);
-      const sp = FEEL.dustSpeed * (0.2 + Math.random() * 1.1);
+      const sp = isDust ? FEEL.dustSpeed * (0.5 + Math.random() * 0.9) : 0.04 * Math.random();
       dustVel[i3] = rr * Math.cos(th) * sp;
-      dustVel[i3 + 1] = u * sp + 0.15;
+      dustVel[i3 + 1] = u * sp + (isDust ? 0.1 : 0);
       dustVel[i3 + 2] = rr * Math.sin(th) * sp;
       offX[i] = home[i3]! - pieces.cx[this.pieceOf[i]!]!;
       offY[i] = home[i3 + 1]! - pieces.cy[this.pieceOf[i]!]!;
