@@ -13,7 +13,7 @@ export const FEEL = {
   /** Model width after normalization, world units. */
   targetSize: 1.7,
   /** Number of rigid pieces the model breaks into. */
-  pieces: 26,
+  pieces: 16,
   /** Piece drift speed, units/s. */
   pieceSpeed: 0.85,
   pieceSpread: 0.55,
@@ -21,8 +21,11 @@ export const FEEL = {
   radialBias: 0.6,
   /** Piece tumble rate, rad/s. */
   pieceSpin: 1.5,
+  /** Fraction of particles that shed off as loose dust; the rest stay locked
+   *  to their shard so the pieces read as solid fragments. */
+  dustFraction: 0.25,
   /** Dust haze: speed, drag and gravity for the fine particles. */
-  dustSpeed: 0.55,
+  dustSpeed: 1.1,
   dustDrag: 1.8,
   drag: 1.1,
   gravity: -0.12,
