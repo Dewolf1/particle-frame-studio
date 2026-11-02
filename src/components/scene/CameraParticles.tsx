@@ -81,7 +81,7 @@ export function CameraParticles({ onSim, onReady }: CameraParticlesProps) {
 
   const uniforms = useMemo(
     () => ({
-      uSize: { value: 0.011 },
+      uSize: { value: 0.014 },
       uScale: { value: 600 },
       uTime: { value: 0 },
       uScroll: { value: 0 },

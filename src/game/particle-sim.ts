@@ -204,7 +204,6 @@ export class ParticleSim {
         }
       }
       this.pieceOf[i] = best;
-      cx[best]! += 0; // keep TS happy; sums below
       cx[best] = cx[best]! + x;
       cy[best] = cy[best]! + y;
       cz[best] = cz[best]! + z;
