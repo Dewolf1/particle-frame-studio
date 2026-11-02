@@ -411,9 +411,9 @@ export class ParticleSim {
         this.dustVel[d3] = this.dustVel[d3]! * dustDragF;
         this.dustVel[d3 + 1] = (this.dustVel[d3 + 1]! + FEEL.gravity * 0.4 * dt) * dustDragF;
         this.dustVel[d3 + 2] = this.dustVel[d3 + 2]! * dustDragF;
-        this.dust[d3] += this.dustVel[d3]! * dt;
-        this.dust[d3 + 1] += this.dustVel[d3 + 1]! * dt;
-        this.dust[d3 + 2] += this.dustVel[d3 + 2]! * dt;
+        this.dust[d3] = this.dust[d3]! + this.dustVel[d3]! * dt;
+        this.dust[d3 + 1] = this.dust[d3 + 1]! + this.dustVel[d3 + 1]! * dt;
+        this.dust[d3 + 2] = this.dust[d3 + 2]! + this.dustVel[d3 + 2]! * dt;
 
         px = pieces.px[p]! + rx + this.dust[d3]!;
         py = pieces.py[p]! + ry + this.dust[d3 + 1]!;
