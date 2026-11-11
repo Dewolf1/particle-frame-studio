@@ -1,18 +1,20 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Instagram } from "lucide-react";
-import { CameraParticles } from "@/components/scene/CameraParticles";
+import { CameraShatter, type CameraPhase } from "@/components/scene/CameraShatter";
 import { CanvasBoundary, supportsWebGL } from "@/components/scene/WebGLFallback";
-import type { ParticlePhase, ParticleSim } from "@/game/particle-sim";
 import work1 from "@/assets/work-1.jpg";
 import work2 from "@/assets/work-2.jpg";
 import work3 from "@/assets/work-3.jpg";
-import insta1 from "@/assets/insta-1.jpg";
-import insta2 from "@/assets/insta-2.jpg";
-import insta3 from "@/assets/insta-3.jpg";
+import insta1 from "@/assets/instagram/delivery-unveiling.jpg.asset.json";
+import insta2 from "@/assets/instagram/showroom-feature.jpg.asset.json";
+import insta3 from "@/assets/instagram/gifted-delivery.jpg.asset.json";
+import insta4 from "@/assets/instagram/cafe-portrait.jpg.asset.json";
+import insta5 from "@/assets/instagram/evening-portrait.jpg.asset.json";
+import insta6 from "@/assets/instagram/window-portrait.jpg.asset.json";
 
-const INSTAGRAM_URL = "https://instagram.com/lumen.studio";
-const INSTAGRAM_HANDLE = "@lumen.studio";
+const INSTAGRAM_URL = "https://www.instagram.com/paiman_wafa/";
+const INSTAGRAM_HANDLE = "@paiman_wafa";
 
 const NAV_LINKS = [
   { label: "Work", href: "#work" },
@@ -20,8 +22,8 @@ const NAV_LINKS = [
   { label: "Contact", href: "#contact" },
 ];
 
-const HINT: Record<ParticlePhase, string> = {
-  assembling: "Assembling…",
+const HINT: Record<CameraPhase, string> = {
+  assembling: "Reassembling…",
   idle: "Click the camera to shatter it",
   exploded: "Click to reassemble",
 };
@@ -33,12 +35,12 @@ const WORKS = [
 ];
 
 const INSTA_POSTS = [
-  { src: work1, alt: "Studio portrait in amber light" },
-  { src: insta1, alt: "On set with the cinema camera" },
-  { src: insta2, alt: "Dancer in motion blur" },
-  { src: insta3, alt: "Vintage lens catching flares" },
-  { src: work2, alt: "Night street frames" },
-  { src: work3, alt: "Behind the scenes" },
+  { src: insta1.url, alt: "A car reveal at the showroom" },
+  { src: insta2.url, alt: "A black car inside the showroom" },
+  { src: insta3.url, alt: "A gift-wrapped car reveal" },
+  { src: insta4.url, alt: "Paiman seated in a cafe" },
+  { src: insta5.url, alt: "Paiman in a tailored suit" },
+  { src: insta6.url, alt: "Paiman by a window" },
 ];
 
 const SERVICES = [
@@ -57,22 +59,19 @@ const SERVICES = [
 ];
 
 export default function PortfolioPage() {
-  const simRef = useRef<ParticleSim | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const [phase, setPhase] = useState<ParticlePhase>("assembling");
+  const [phase, setPhase] = useState<CameraPhase>("idle");
+  const [shattered, setShattered] = useState(false);
   const [ready, setReady] = useState(false);
-
-  const handleSim = useCallback((sim: ParticleSim | null) => {
-    simRef.current = sim;
-    if (sim) {
-      sim.onPhaseChange = () => setPhase(sim.phase);
-      setPhase(sim.phase);
-    }
-  }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest("a, button")) return;
-    simRef.current?.toggle();
+    setShattered((current) => !current);
+  }, []);
+
+  const handlePhaseChange = useCallback((nextPhase: CameraPhase) => {
+    setPhase(nextPhase);
+    if (nextPhase !== "exploded") setShattered(false);
   }, []);
 
   const handleReady = useCallback(() => {
@@ -135,7 +134,11 @@ export default function PortfolioPage() {
                 gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
               >
                 <Suspense fallback={null}>
-                  <CameraParticles onSim={handleSim} onReady={handleReady} />
+                  <ambientLight intensity={1.15} />
+                  <directionalLight position={[3, 4, 5]} intensity={2.7} />
+                  <directionalLight position={[-4, 1, -3]} intensity={1.35} color="#d6e2ff" />
+                  <pointLight position={[0, 2.5, 2]} intensity={85} color="#ffb55c" />
+                  <CameraShatter shattered={shattered} onPhaseChange={handlePhaseChange} onReady={handleReady} />
                 </Suspense>
               </Canvas>
             </CanvasBoundary>
