@@ -11,7 +11,5 @@
 
 ## Engineering notes
 
-- Hero particle shatter is piece-based: `ParticleSim` (src/game/particle-sim.ts) splits the
-  surface into ~16 Voronoi shards (nearest-seed clustering) that fly off and tumble rigidly,
-  with a 25% dust minority shedding off. Keep feel tuning in the `FEEL` constants; the scene
-  layer only reads `sim.pos` each frame.
+- The hero renders the textured camera as normalized triangle-cluster mesh shards in
+  `CameraShatter`; preserve UVs/materials and animate rigid shard transforms for break/reassembly.
