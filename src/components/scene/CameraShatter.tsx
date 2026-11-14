@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import cameraModel from "@/assets/models/camera-textured.glb.asset.json";
+import { SparkDustParticles } from "./SparkDustParticles";
 
 export type CameraPhase = "idle" | "exploded" | "assembling";
 
@@ -47,7 +48,9 @@ function triangleVertex(geometry: THREE.BufferGeometry, corner: number) {
 }
 
 function faceMaterialIndex(geometry: THREE.BufferGeometry, start: number) {
-  const group = geometry.groups.find((item) => start >= item.start && start < item.start + item.count);
+  const group = geometry.groups.find(
+    (item) => start >= item.start && start < item.start + item.count,
+  );
   return group?.materialIndex ?? 0;
 }
 
@@ -69,7 +72,10 @@ function buildShards(root: THREE.Object3D): Shard[] {
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     const vertexCount = geometry.index?.count ?? geometry.getAttribute("position").count;
     const start = Math.max(0, geometry.drawRange.start);
-    const end = Math.min(vertexCount, start + (Number.isFinite(geometry.drawRange.count) ? geometry.drawRange.count : vertexCount));
+    const end = Math.min(
+      vertexCount,
+      start + (Number.isFinite(geometry.drawRange.count) ? geometry.drawRange.count : vertexCount),
+    );
     sources.push({ geometry, materials, faceCount: Math.max(0, Math.floor((end - start) / 3)) });
   });
 
@@ -173,7 +179,10 @@ function buildShards(root: THREE.Object3D): Shard[] {
     else shardCenter.copy(seeds[index] ?? new THREE.Vector3());
   });
 
-  const buckets = Array.from({ length: shardCount }, () => new Map<string, Map<string, number[]>>());
+  const buckets = Array.from(
+    { length: shardCount },
+    () => new Map<string, Map<string, number[]>>(),
+  );
   for (let sourceIndex = 0; sourceIndex < sources.length; sourceIndex++) {
     const source = sources[sourceIndex];
     const assignment = assignments[sourceIndex];
@@ -208,7 +217,11 @@ function buildShards(root: THREE.Object3D): Shard[] {
           }
           for (let component = 0; component < attribute.itemSize; component++) {
             const value = attribute.getComponent(sourceVertex, component);
-            values.push(name === "position" ? value - (centers[shardIndex]?.getComponent(component) ?? 0) : value);
+            values.push(
+              name === "position"
+                ? value - (centers[shardIndex]?.getComponent(component) ?? 0)
+                : value,
+            );
           }
         }
       }
@@ -221,11 +234,14 @@ function buildShards(root: THREE.Object3D): Shard[] {
       const [sourceKey, materialKey] = key.split(":");
       const sourceIndex = Number(sourceKey);
       const materialIndex = Number(materialKey);
-      const material = sources[sourceIndex]?.materials[materialIndex] ?? sources[sourceIndex]?.materials[0];
+      const material =
+        sources[sourceIndex]?.materials[materialIndex] ?? sources[sourceIndex]?.materials[0];
       if (!material) return;
       const geometry = new THREE.BufferGeometry();
       attributes.forEach((values, name) => {
-        const itemSize = sources[sourceIndex]?.geometry.getAttribute(name)?.itemSize ?? (name === "position" || name === "normal" ? 3 : 2);
+        const itemSize =
+          sources[sourceIndex]?.geometry.getAttribute(name)?.itemSize ??
+          (name === "position" || name === "normal" ? 3 : 2);
         geometry.setAttribute(name, new THREE.Float32BufferAttribute(values, itemSize));
       });
       geometry.computeBoundingSphere();
@@ -245,13 +261,55 @@ export function CameraShatter({ shattered, onPhaseChange, onReady }: CameraShatt
   const pieceGroups = useRef<Array<THREE.Group | null>>([]);
   const motion = useRef<Motion[]>([]);
   const phase = useRef<CameraPhase>("idle");
+  const [phaseState, setPhaseState] = useState<CameraPhase>("idle");
   const lastShattered = useRef(false);
   const explodeAge = useRef(0);
   const assembleAge = useRef(0);
+  const targetRot = useRef({ x: 0, y: 0 });
+  const currentRot = useRef({ x: 0, y: 0 });
+  const isPointerDown = useRef(false);
+  const lastPointer = useRef({ x: 0, y: 0 });
 
   if (motion.current.length !== shards.length) {
     motion.current = shards.map(() => ({ vx: 0, vy: 0, vz: 0, wx: 0, wy: 0, wz: 0 }));
   }
+
+  useEffect(() => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!isPointerDown.current) return;
+      const clientX = "touches" in e ? (e.touches[0]?.clientX ?? 0) : e.clientX;
+      const clientY = "touches" in e ? (e.touches[0]?.clientY ?? 0) : e.clientY;
+      const dx = clientX - lastPointer.current.x;
+      const dy = clientY - lastPointer.current.y;
+      lastPointer.current = { x: clientX, y: clientY };
+
+      const isTouch = "touches" in e;
+      if (!isTouch) {
+        // Desktop drag: strictly clamp pitch to gentle ±14° tilt so it can NEVER flip upside down
+        targetRot.current.x = Math.max(-0.25, Math.min(0.25, targetRot.current.x + dy * 0.003));
+        targetRot.current.y = Math.max(-0.75, Math.min(0.75, targetRot.current.y + dx * 0.005));
+      } else {
+        // Mobile touch: only allow subtle horizontal yaw; pitch is locked to keep upright while scrolling
+        targetRot.current.y = Math.max(-0.6, Math.min(0.6, targetRot.current.y + dx * 0.004));
+      }
+    };
+
+    const handleUp = () => {
+      isPointerDown.current = false;
+    };
+
+    window.addEventListener("mousemove", handleMove, { passive: true });
+    window.addEventListener("touchmove", handleMove, { passive: true });
+    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("touchend", handleUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("touchmove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("touchend", handleUp);
+    };
+  }, []);
 
   useEffect(() => {
     onReady?.();
@@ -263,11 +321,21 @@ export function CameraShatter({ shattered, onPhaseChange, onReady }: CameraShatt
     if (shattered && phase.current !== "exploded") {
       explodeAge.current = 0;
       phase.current = "exploded";
+      setPhaseState("exploded");
       shards.forEach((shard, index) => {
         const group = pieceGroups.current[index];
         const speed = 0.8 + Math.random() * 0.8;
-        const random = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
-        const direction = shard.center.clone().normalize().multiplyScalar(0.7).add(random).normalize();
+        const random = new THREE.Vector3(
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+        ).normalize();
+        const direction = shard.center
+          .clone()
+          .normalize()
+          .multiplyScalar(0.7)
+          .add(random)
+          .normalize();
         const item = motion.current[index];
         if (!group || !item) return;
         item.vx = direction.x * speed;
@@ -281,21 +349,45 @@ export function CameraShatter({ shattered, onPhaseChange, onReady }: CameraShatt
     } else if (!shattered && phase.current === "exploded") {
       assembleAge.current = 0;
       phase.current = "assembling";
+      setPhaseState("assembling");
       onPhaseChange?.("assembling");
     }
   }, [shattered, shards, onPhaseChange]);
 
   useFrame((state, deltaRaw) => {
     const dt = Math.min(deltaRaw, 0.05);
+
+    // Adaptive camera framing for mobile phones
+    const aspect = state.size.width / Math.max(state.size.height, 1);
+    const targetZ = aspect < 1 ? Math.max(3.2, 1.85 / Math.max(aspect, 0.44)) : 3.1;
+    state.camera.position.z += (targetZ - state.camera.position.z) * Math.min(1, dt * 6);
+
+    // Smooth elastic spring back to center when released
+    if (!isPointerDown.current) {
+      targetRot.current.x += (0 - targetRot.current.x) * Math.min(1, 4 * dt);
+      targetRot.current.y += (0 - targetRot.current.y) * Math.min(1, 2.5 * dt);
+    }
+
+    // Smoothly interpolate current rotation to target
+    currentRot.current.x += (targetRot.current.x - currentRot.current.x) * Math.min(1, 10 * dt);
+    currentRot.current.y += (targetRot.current.y - currentRot.current.y) * Math.min(1, 10 * dt);
+
     if (outer.current) {
       const isPhone = state.size.width < 600;
       const isShortScreen = state.size.height < 900;
-      const sceneScale = isPhone ? 0.56 : isShortScreen ? 0.82 : 1;
+      const sceneScale = isPhone ? 0.92 : isShortScreen ? 0.88 : 1.05;
       outer.current.scale.setScalar(sceneScale);
-      outer.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.12;
-      outer.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.035;
-      const restingY = isPhone ? -0.62 : isShortScreen ? -0.38 : -0.08;
-      outer.current.position.y = restingY + Math.sin(state.clock.elapsedTime * 0.55) * 0.035;
+
+      const time = state.clock.elapsedTime;
+      const baseRotY = Math.sin(time * 0.22) * 0.18;
+      const baseRotX = Math.sin(time * 0.28) * 0.035;
+
+      outer.current.rotation.x = baseRotX + currentRot.current.x;
+      outer.current.rotation.y = baseRotY + currentRot.current.y;
+      outer.current.rotation.z = 0;
+
+      const restingY = isPhone ? 0.08 : isShortScreen ? -0.15 : -0.04;
+      outer.current.position.y = restingY + Math.sin(time * 0.7) * 0.035;
     }
 
     if (phase.current === "exploded") {
@@ -303,6 +395,7 @@ export function CameraShatter({ shattered, onPhaseChange, onReady }: CameraShatt
       if (explodeAge.current >= AUTO_REASSEMBLE) {
         assembleAge.current = 0;
         phase.current = "assembling";
+        setPhaseState("assembling");
         onPhaseChange?.("assembling");
       }
     }
@@ -352,6 +445,7 @@ export function CameraShatter({ shattered, onPhaseChange, onReady }: CameraShatt
           Object.assign(item, { vx: 0, vy: 0, vz: 0, wx: 0, wy: 0, wz: 0 });
           if (index === shards.length - 1) {
             phase.current = "idle";
+            setPhaseState("idle");
             onPhaseChange?.("idle");
           }
         }
@@ -360,7 +454,14 @@ export function CameraShatter({ shattered, onPhaseChange, onReady }: CameraShatt
   });
 
   return (
-    <group ref={outer}>
+    <group
+      ref={outer}
+      onPointerDown={(e) => {
+        isPointerDown.current = true;
+        lastPointer.current = { x: e.clientX, y: e.clientY };
+      }}
+    >
+      <SparkDustParticles phase={phaseState} />
       {shards.map((shard, index) => (
         <group
           key={index}
@@ -370,7 +471,13 @@ export function CameraShatter({ shattered, onPhaseChange, onReady }: CameraShatt
           position={shard.center}
         >
           {shard.parts.map((part, partIndex) => (
-            <mesh key={partIndex} geometry={part.geometry} material={part.material} castShadow receiveShadow />
+            <mesh
+              key={partIndex}
+              geometry={part.geometry}
+              material={part.material}
+              castShadow
+              receiveShadow
+            />
           ))}
         </group>
       ))}

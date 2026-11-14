@@ -6,17 +6,17 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Lumen Studio — Photography & Film" },
+      { title: "Paiman Wafa — Photography & Film" },
       {
         name: "description",
         content:
-          "A photography and film studio portfolio: a shattering 3D camera hero, selected stills and films, and commissions for brands that want to be remembered.",
+          "Director, Cinematographer & Photographer. Crafting large-format frames, 35mm celluloid discipline, and moving images.",
       },
-      { property: "og:title", content: "Lumen Studio — Photography & Film" },
+      { property: "og:title", content: "Paiman Wafa — Photography & Film" },
       {
         property: "og:description",
         content:
-          "A photography and film studio portfolio with a 3D camera that shatters into light particles.",
+          "Director and cinematographer portfolio with an interactive 3D camera that shatters into light particles.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

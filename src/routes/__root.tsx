@@ -78,14 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lumen Studio — Photography & Film" },
-      { name: "description", content: "A photography and film studio portfolio." },
-      { name: "author", content: "Lumen Studio" },
-      { property: "og:title", content: "Lumen Studio — Photography & Film" },
+      { title: "Paiman Wafa — Photography & Film" },
+      {
+        name: "description",
+        content:
+          "Director, Cinematographer & Photographer. Crafting large-format frames, 35mm celluloid discipline, and moving images.",
+      },
+      { name: "author", content: "Paiman Wafa" },
+      { property: "og:title", content: "Paiman Wafa — Photography & Film" },
       { property: "og:description", content: "Stories told in light & motion." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:creator", content: "@paiman_wafa" },
     ],
     links: [
       {
@@ -96,9 +100,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@300;400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Syne:wght@600;700;800&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "alternate icon", href: "/favicon.ico" },
     ],
   }),
   shellComponent: RootShell,

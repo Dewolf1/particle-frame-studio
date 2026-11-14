@@ -1,38 +1,34 @@
-# Particle Frame Studio
+# Paiman Wafa — Photography & Film Studio
 
-What you are envisioning is a highly premium, interactive "Hero section" for a creative portfolio. When a visitor lands on the site, they are greeted by a striking, dark environment featuring a detailed 3D camera. As they scroll or interact, this camera dramatically fractures and dissolves into floating particles—symbolising the transition from physical gear to the digital magic of photography and video editing.
+A high-craft production portfolio for director, cinematographer, and photographer **Paiman Wafa**.
 
-In web design, this creates an instant "wow factor" that immediately proves your technical and creative authority to high-end clients.
+Features an interactive 3D camera hero that shatters into 1,400 glowing amber ember particles with realistic physics, custom Web Audio optical sound effects, dual-threat stills vs. motion comparison slider, production gear vault, and 35mm celluloid filmstrip carousel.
 
-Here is how this concept breaks down visually and structurally for your portfolio, followed by the exact code to bring it to life.
+## Tech Stack
 
-The Concept Break Down
-
-The Theme: True Dark Mode (#0A0A0A). Deep, cinematic blacks with stark white typography, allowing the 3D element to command total attention.
-
-The Object: A detailed, stylized 3D camera wireframe/mesh floating smoothly in the center of the screen.
-
-The Animation: A dynamic disintegration effect. The camera is constructed entirely out of thousands of tiny light particles (vertices) that dynamically scatter, explode, and drift away when clicked.
-
-The Context: A high-end portfolio layout for a dual-threat Photographer & Videographer, complete with clean navigation and punchy typography.
-
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/090f68b6-72ec-5478-a9ac-a8bf769e3c5a).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+- **Framework**: TanStack Start / React 19 / Vite
+- **3D Engine**: Three.js / React Three Fiber / Drei
+- **Typography**: Instrument Serif, Syne, Instrument Sans, JetBrains Mono
+- **Styling**: Tailwind CSS v4, Lucide Icons, Embla Carousel
+- **Audio**: Web Audio API mechanical camera synthesis
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+npm install
 npm run dev
 ```
+
+Visit [http://localhost:8080/](http://localhost:8080/) to view the site locally.
+
+## Deploying to Render
+
+This repository includes a [`render.yaml`](file:///home/dewolf/OpenSource/particle-frame-studio/render.yaml) blueprint for one-click deployment:
+
+1. Connect this GitHub repository to [Render](https://render.com).
+2. Create a new **Web Service** or use **Blueprints** pointing to `render.yaml`.
+3. Render automatically sets:
+   - **Environment**: Node
+   - **Build Command**: `npm install && npm run build:render`
+   - **Start Command**: `npm start`
+   - **Environment Variable**: `RENDER=true` (builds the high-performance SSR Node server)

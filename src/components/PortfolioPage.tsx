@@ -1,77 +1,84 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Instagram } from "lucide-react";
+import { Instagram, Camera, Sparkles, Copy, Mail } from "lucide-react";
+import { toast } from "sonner";
 import { CameraShatter, type CameraPhase } from "@/components/scene/CameraShatter";
 import { CanvasBoundary, supportsWebGL } from "@/components/scene/WebGLFallback";
-import work1 from "@/assets/work-1.jpg";
-import work2 from "@/assets/work-2.jpg";
-import work3 from "@/assets/work-3.jpg";
-import insta1 from "@/assets/instagram/delivery-unveiling.jpg.asset.json";
-import insta2 from "@/assets/instagram/showroom-feature.jpg.asset.json";
-import insta3 from "@/assets/instagram/gifted-delivery.jpg.asset.json";
-import insta4 from "@/assets/instagram/cafe-portrait.jpg.asset.json";
-import insta5 from "@/assets/instagram/evening-portrait.jpg.asset.json";
-import insta6 from "@/assets/instagram/window-portrait.jpg.asset.json";
+import { Header } from "@/components/navigation/Header";
+import { MobileNavSheet } from "@/components/navigation/MobileNavSheet";
+import { WorkGallery } from "@/components/portfolio/WorkGallery";
+import { StillsMotionSplit } from "@/components/interactive/StillsMotionSplit";
+import { GearVault } from "@/components/studio/GearVault";
+import { DirectorBio } from "@/components/studio/DirectorBio";
+import { ServicesSection } from "@/components/studio/ServicesSection";
+import { FilmstripCarousel } from "@/components/interactive/FilmstripCarousel";
+import { BookingConciergeModal } from "@/components/booking/BookingConciergeModal";
+import { Toaster } from "@/components/ui/sonner";
+import { sounds } from "@/lib/sound-effects";
 
 const INSTAGRAM_URL = "https://www.instagram.com/paiman_wafa/";
-const INSTAGRAM_HANDLE = "@paiman_wafa";
-
-const NAV_LINKS = [
-  { label: "Work", href: "#work" },
-  { label: "Services", href: "#services" },
-  { label: "Contact", href: "#contact" },
-];
+const STUDIO_EMAIL = "contact@paimanwafa.com";
 
 const HINT: Record<CameraPhase, string> = {
-  assembling: "Reassembling…",
-  idle: "Click the camera to shatter it",
-  exploded: "Click to reassemble",
+  assembling: "Optical Reassembly in progress…",
+  idle: "Click camera to fracture into particles",
+  exploded: "Click to reassemble optics",
 };
-
-const WORKS = [
-  { src: work1, title: "Afterglow", kind: "Portrait — Still" },
-  { src: work2, title: "Night Frequency", kind: "Street — Film" },
-  { src: work3, title: "On Set", kind: "Behind the Scenes" },
-];
-
-const INSTA_POSTS = [
-  { src: insta1.url, alt: "A car reveal at the showroom" },
-  { src: insta2.url, alt: "A black car inside the showroom" },
-  { src: insta3.url, alt: "A gift-wrapped car reveal" },
-  { src: insta4.url, alt: "Paiman seated in a cafe" },
-  { src: insta5.url, alt: "Paiman in a tailored suit" },
-  { src: insta6.url, alt: "Paiman by a window" },
-];
-
-const SERVICES = [
-  {
-    title: "Still Photography",
-    body: "Portraits, campaigns and editorial sets — composed for print, feed and billboard alike.",
-  },
-  {
-    title: "Film & Motion",
-    body: "Brand films, music videos and documentaries, directed end to end from concept to final cut.",
-  },
-  {
-    title: "Post-Production",
-    body: "Edit, grade and sound design. The polish that separates footage from a finished film.",
-  },
-];
 
 export default function PortfolioPage() {
   const stageRef = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState<CameraPhase>("idle");
   const [shattered, setShattered] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(true);
+  const [webgl, setWebgl] = useState(true);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if ((e.target as HTMLElement).closest("a, button")) return;
+  // Modals & Navigation state
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<string>("");
+
+  const pointerStart = useRef({ x: 0, y: 0 });
+  const hasMoved = useRef(false);
+
+  const handleToggleShatter = useCallback(() => {
+    sounds.shutterClick();
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate(25);
+      } catch {
+        // Safe fallback
+      }
+    }
     setShattered((current) => !current);
   }, []);
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest("a, button, input, textarea")) return;
+    pointerStart.current = { x: e.clientX, y: e.clientY };
+    hasMoved.current = false;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (Math.hypot(e.clientX - pointerStart.current.x, e.clientY - pointerStart.current.y) > 8) {
+      hasMoved.current = true;
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest("a, button, input, textarea")) return;
+    if (!hasMoved.current) {
+      handleToggleShatter();
+    }
+  };
+
   const handlePhaseChange = useCallback((nextPhase: CameraPhase) => {
     setPhase(nextPhase);
-    if (nextPhase !== "exploded") setShattered(false);
+    if (nextPhase === "assembling") {
+      sounds.shutterWind();
+    }
+    if (nextPhase !== "exploded") {
+      setShattered(false);
+    }
   }, []);
 
   const handleReady = useCallback(() => {
@@ -79,7 +86,6 @@ export default function PortfolioPage() {
     setReady(true);
   }, []);
 
-  const [webgl, setWebgl] = useState(true);
   useEffect(() => {
     if (!supportsWebGL()) {
       setWebgl(false);
@@ -87,46 +93,54 @@ export default function PortfolioPage() {
     }
   }, [handleReady]);
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-gradient-to-b from-background via-background/60 to-transparent px-6 py-5 md:px-12">
-        <a href="#" className="font-display text-xl tracking-wide">
-          Lumen<span className="text-accent">.</span>
-        </a>
-        <nav className="flex items-center gap-6 md:gap-10">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {l.label}
-            </a>
-          ))}
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Instagram"
-            className="text-muted-foreground transition-colors hover:text-accent"
-          >
-            <Instagram className="size-4" strokeWidth={1.5} />
-          </a>
-        </nav>
-      </header>
+  const handleCopyEmail = () => {
+    sounds.lensTick();
+    navigator.clipboard.writeText(STUDIO_EMAIL);
+    toast.success("Studio email copied to clipboard", {
+      description: STUDIO_EMAIL,
+    });
+  };
 
+  return (
+    <div className="relative min-h-screen bg-background text-foreground selection:bg-accent selection:text-background">
+      {/* 35mm Celluloid Film Grain Texture Overlay */}
+      <div className="film-grain" aria-hidden />
+
+      {/* Persistent Frosted Header */}
+      <Header
+        onOpenBooking={() => {
+          setSelectedService("");
+          setBookingOpen(true);
+        }}
+        onOpenMobileNav={() => setMobileNavOpen(true)}
+      />
+
+      {/* Mobile Slide-out Drawer */}
+      <MobileNavSheet
+        open={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        onOpenBooking={() => {
+          setSelectedService("");
+          setBookingOpen(true);
+        }}
+      />
+
+      {/* 3D Hero Section */}
       <section
-        className="vignette relative h-[100svh] min-h-[600px] overflow-hidden"
         onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        className="vignette relative h-[100svh] min-h-[600px] overflow-hidden select-none"
       >
+        {/* WebGL Canvas Background */}
         <div
           ref={stageRef}
-          className={`absolute inset-0 transition-opacity duration-1000 ${ready ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 transition-opacity duration-1000 ${
+            ready ? "opacity-100" : "opacity-0"
+          }`}
         >
           {webgl ? (
-            <CanvasBoundary
-              fallback={<div className="hero-glow absolute inset-0" aria-hidden />}
-            >
+            <CanvasBoundary fallback={<div className="hero-glow absolute inset-0" aria-hidden />}>
               <Canvas
                 flat
                 dpr={[1, 2]}
@@ -134,11 +148,16 @@ export default function PortfolioPage() {
                 gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
               >
                 <Suspense fallback={null}>
-                  <ambientLight intensity={1.15} />
-                  <directionalLight position={[3, 4, 5]} intensity={2.7} />
-                  <directionalLight position={[-4, 1, -3]} intensity={1.35} color="#d6e2ff" />
+                  <ambientLight intensity={1.25} />
+                  <directionalLight position={[3, 4, 5]} intensity={2.8} />
+                  <directionalLight position={[-4, 1, -3]} intensity={1.4} color="#d6e2ff" />
                   <pointLight position={[0, 2.5, 2]} intensity={85} color="#ffb55c" />
-                  <CameraShatter shattered={shattered} onPhaseChange={handlePhaseChange} onReady={handleReady} />
+                  <pointLight position={[0, -1.2, -2]} intensity={45} color="#ffaa44" />
+                  <CameraShatter
+                    shattered={shattered}
+                    onPhaseChange={handlePhaseChange}
+                    onReady={handleReady}
+                  />
                 </Suspense>
               </Canvas>
             </CanvasBoundary>
@@ -147,172 +166,208 @@ export default function PortfolioPage() {
           )}
         </div>
 
-        <div className="pointer-events-none relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
-          <p className="animate-rise text-[11px] uppercase tracking-[0.4em] text-muted-foreground" style={{ animationDelay: "0.1s" }}>
-            Photography · Film · Post
-          </p>
+        {/* Hero Editorial Content */}
+        <div className="pointer-events-none relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center px-4 sm:px-6 text-center">
+          {/* Metadata pill badge */}
+          <div
+            className="animate-rise flex items-center gap-2 rounded-full border border-border/80 bg-background/60 px-4 py-1.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-accent backdrop-blur-md"
+            style={{ animationDelay: "0.1s" }}
+          >
+            <Camera className="size-3" />
+            <span>Photography · Cinematography · Post</span>
+          </div>
+
           <h1
-            className="animate-rise mt-6 font-display text-[clamp(3.2rem,9vw,7.5rem)] leading-[0.95]"
+            className="animate-rise mt-4 sm:mt-6 font-serif font-normal text-[clamp(3.1rem,8vw,7.8rem)] leading-[0.96] tracking-[-0.03em] text-foreground"
             style={{ animationDelay: "0.25s" }}
           >
-            Stories told in
+            Stories Told in
             <br />
-            <em className="text-accent">light &amp; motion</em>
+            <span className="italic font-serif font-normal text-accent tracking-normal">
+              Light &amp; Motion
+            </span>
           </h1>
+
           <p
-            className="animate-rise mt-8 max-w-xl text-sm text-muted-foreground md:text-base"
+            className="animate-rise mt-4 sm:mt-6 max-w-xl text-xs sm:text-sm md:text-base leading-relaxed text-muted-foreground/80 font-sans font-normal px-2"
             style={{ animationDelay: "0.4s" }}
           >
-            A photography and film studio for brands that want to be remembered — captured as
-            stills, or set in motion.
+            A high-craft production studio for brands that want to be remembered. Sculpted with
+            large-format glass, 35mm celluloid discipline, and uncompromising color science.
           </p>
+
           <div
-            className="animate-rise pointer-events-auto mt-10 flex flex-wrap items-center justify-center gap-4"
+            className="animate-rise pointer-events-auto mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4"
             style={{ animationDelay: "0.55s" }}
           >
             <a
               href="#work"
-              className="rounded-full bg-foreground px-7 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-background transition-transform hover:scale-105"
+              onClick={() => sounds.lensTick()}
+              className="relative overflow-hidden rounded-full bg-foreground px-6 sm:px-7 py-3 sm:py-3.5 text-[10px] sm:text-[11px] font-sans font-medium uppercase tracking-[0.18em] text-background transition-all duration-300 hover:scale-105 hover:bg-accent hover:shadow-[0_0_25px_rgba(255,180,80,0.35)] active:scale-95"
             >
-              View work
+              Explore Portfolio
             </a>
-            <a
-              href="#contact"
-              className="rounded-full border border-border px-7 py-3 text-[11px] font-medium uppercase tracking-[0.2em] transition-colors hover:border-foreground"
+
+            <button
+              type="button"
+              onClick={() => {
+                sounds.shutterClick();
+                setSelectedService("");
+                setBookingOpen(true);
+              }}
+              className="rounded-full border border-border/80 bg-card/60 px-6 sm:px-7 py-3 sm:py-3.5 text-[10px] sm:text-[11px] font-sans font-medium uppercase tracking-[0.18em] text-foreground backdrop-blur-md transition-all duration-300 hover:border-accent hover:text-accent hover:scale-105 active:scale-95"
             >
-              Start a project
-            </a>
+              Initiate Project
+            </button>
           </div>
         </div>
 
-        <div className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-3">
-          <span className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
-            {HINT[phase]}
-          </span>
+        {/* Interactive Camera Shatter Trigger Button & Indicator */}
+        <div className="absolute inset-x-0 bottom-6 sm:bottom-8 z-20 flex flex-col items-center gap-2.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={handleToggleShatter}
+            className="group animate-pulse-glow flex items-center gap-2 rounded-full border border-accent/40 bg-background/90 px-4 sm:px-5 py-2 sm:py-2.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.18em] text-foreground backdrop-blur-md transition-all duration-300 hover:border-accent hover:scale-105 active:scale-95 shadow-xl"
+          >
+            <Sparkles className="size-3 text-accent group-hover:rotate-45 transition-transform duration-500" />
+            <span>{HINT[phase]}</span>
+          </button>
           <span className="scroll-line" aria-hidden />
         </div>
       </section>
 
-      <section id="work" className="mx-auto max-w-6xl px-6 py-28 md:px-12">
-        <div className="mb-12 flex items-end justify-between">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground">
-              Selected work
-            </p>
-            <h2 className="mt-4 font-display text-4xl md:text-6xl">Frames that linger</h2>
-          </div>
-          <span className="hidden text-[11px] uppercase tracking-[0.25em] text-muted-foreground md:block">
-            Full portfolio on request
-          </span>
+      {/* Selected Work Gallery */}
+      <WorkGallery />
+
+      {/* Dual-Threat Interactive Stills vs Motion Reveal */}
+      <StillsMotionSplit />
+
+      {/* Studio Equipment Arsenal / Gear Vault */}
+      <GearVault />
+
+      {/* Director Profile & Artistic Statement */}
+      <DirectorBio
+        onOpenBooking={() => {
+          setSelectedService("");
+          setBookingOpen(true);
+        }}
+      />
+
+      {/* Services & Deliverables */}
+      <ServicesSection
+        onSelectService={(service) => {
+          setSelectedService(service);
+          setBookingOpen(true);
+        }}
+      />
+
+      {/* 35mm Filmstrip Daily Frames Carousel */}
+      <FilmstripCarousel />
+
+      {/* Contact & Commission Section */}
+      <section id="contact" className="mx-auto max-w-5xl px-6 py-28 md:py-36 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-3.5 py-1 text-[10px] font-mono uppercase tracking-[0.18em] text-accent mb-6">
+          <Mail className="size-3" />
+          <span>Worldwide Commissions & Bookings</span>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {WORKS.map((w) => (
-            <figure
-              key={w.title}
-              className="group overflow-hidden rounded-xl border border-border/60 bg-card"
-            >
-              <img
-                src={w.src}
-                alt={w.title}
-                loading="lazy"
-                width={1024}
-                height={1024}
-                className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <figcaption className="flex items-center justify-between p-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                <span>{w.title}</span>
-                <span className="text-accent">{w.kind}</span>
-              </figcaption>
-            </figure>
-          ))}
+
+        <h2 className="font-serif font-normal text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.02] tracking-tight text-foreground">
+          Let&apos;s Make Something
+          <br />
+          <span className="italic font-serif font-normal text-accent tracking-normal">
+            Worth Watching.
+          </span>
+        </h2>
+
+        <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground/85 font-sans font-normal md:text-base">
+          Now booking commercial campaigns, editorial stills, and cinema productions for the coming
+          season. Tell us about the atmosphere you envision.
+        </p>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => {
+              sounds.shutterClick();
+              setSelectedService("");
+              setBookingOpen(true);
+            }}
+            className="rounded-full bg-accent px-8 py-4 text-xs font-sans font-medium uppercase tracking-[0.2em] text-background shadow-2xl transition-transform hover:scale-105"
+          >
+            Start a Commission
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCopyEmail}
+            className="flex items-center gap-2 rounded-full border border-border/80 bg-card/60 px-6 py-4 text-xs font-sans font-medium uppercase tracking-[0.18em] text-foreground backdrop-blur-md transition-colors hover:border-accent hover:text-accent"
+          >
+            <Copy className="size-3.5" />
+            <span>Copy {STUDIO_EMAIL}</span>
+          </button>
         </div>
       </section>
 
-      <section id="instagram" className="mx-auto max-w-6xl px-6 pb-4 pt-28 md:px-12">
-        <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground">
-              Instagram
-            </p>
-            <h2 className="mt-4 font-display text-4xl md:text-6xl">Daily frames</h2>
+      {/* Persistent Footer */}
+      <footer className="border-t border-border/50 bg-card/30 px-6 py-12 text-center text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="mx-auto flex max-w-7xl flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <span className="font-heading font-extrabold text-base sm:text-lg tracking-[0.12em] uppercase text-foreground">
+              Paiman Wafa<span className="text-accent">.</span>
+            </span>
+            <span className="text-border">|</span>
+            <span className="text-[10px] font-sans font-medium">Photography · Film · Post</span>
           </div>
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-3 rounded-full border border-border px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] transition-colors hover:border-accent hover:text-accent"
-          >
-            <Instagram className="size-4" strokeWidth={1.5} />
-            {INSTAGRAM_HANDLE}
-          </a>
-        </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-6">
-          {INSTA_POSTS.map((post) => (
+
+          <div className="flex items-center gap-6">
             <a
-              key={post.src}
+              href="#work"
+              onClick={() => sounds.lensTick()}
+              className="text-[10px] hover:text-foreground transition-colors"
+            >
+              Work
+            </a>
+            <a
+              href="#arsenal"
+              onClick={() => sounds.lensTick()}
+              className="text-[10px] hover:text-foreground transition-colors"
+            >
+              Arsenal
+            </a>
+            <a
+              href="#services"
+              onClick={() => sounds.lensTick()}
+              className="text-[10px] hover:text-foreground transition-colors"
+            >
+              Services
+            </a>
+            <a
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noreferrer"
-              className="group relative block overflow-hidden rounded-xl border border-border/60 bg-card"
+              onClick={() => sounds.lensTick()}
+              className="text-muted-foreground transition-colors hover:text-accent flex items-center gap-1.5"
             >
-              <img
-                src={post.src}
-                alt={post.alt}
-                loading="lazy"
-                width={1024}
-                height={1024}
-                className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <span className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                <Instagram className="size-6 text-accent" strokeWidth={1.5} />
-              </span>
+              <Instagram className="size-3.5" />
+              <span className="text-[10px]">@paiman_wafa</span>
             </a>
-          ))}
-        </div>
-      </section>
+          </div>
 
-      <section id="services" className="border-y border-border/60 bg-card/40">
-        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-3 md:px-12">
-          {SERVICES.map((s) => (
-            <div key={s.title}>
-              <h3 className="font-display text-2xl">{s.title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
-            </div>
-          ))}
+          <div className="text-[10px] text-muted-foreground/80">
+            © 2026 Paiman Wafa. All rights reserved.
+          </div>
         </div>
-      </section>
-
-      <section id="contact" className="mx-auto max-w-4xl px-6 py-32 text-center">
-        <h2 className="font-display text-5xl leading-tight md:text-7xl">
-          Let&apos;s make something
-          <br />
-          <em className="text-accent">worth watching.</em>
-        </h2>
-        <p className="mt-6 text-sm text-muted-foreground md:text-base">
-          Booking commissions for the coming season. Tell us about the story you want to tell.
-        </p>
-        <a
-          href="mailto:hello@lumen.studio"
-          className="mt-10 inline-flex rounded-full bg-foreground px-8 py-4 text-[11px] font-medium uppercase tracking-[0.2em] text-background transition-transform hover:scale-105"
-        >
-          hello@lumen.studio
-        </a>
-      </section>
-
-      <footer className="border-t border-border/60 px-6 py-8 text-center text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-        <div className="mb-4 flex justify-center">
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Instagram"
-            className="text-muted-foreground transition-colors hover:text-accent"
-          >
-            <Instagram className="size-4" strokeWidth={1.5} />
-          </a>
-        </div>
-        © 2026 Lumen Studio — Photography &amp; Film
       </footer>
+
+      {/* Interactive Booking Concierge Dialog */}
+      <BookingConciergeModal
+        open={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        preselectedService={selectedService}
+      />
+
+      {/* Toast Notifications Provider */}
+      <Toaster position="bottom-right" />
     </div>
   );
 }

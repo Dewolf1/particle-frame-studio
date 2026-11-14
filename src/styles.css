@@ -133,6 +133,10 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
     border-color: var(--color-border);
   }
@@ -140,14 +144,21 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 }
 
-/* ============ Lumen Studio design layer ============ */
+/* ============ Paiman Wafa design layer ============ */
 
 @theme {
   --font-display: "Instrument Serif", Georgia, serif;
-  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-heading: "Syne", "Instrument Sans", sans-serif;
+  --font-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* The whole site is dark; the highlight matches the hero's amber light
@@ -170,7 +181,105 @@
 
 @utility animate-rise {
   opacity: 0;
-  animation: rise 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: rise 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 15px rgba(255, 180, 80, 0.12),
+      0 0 30px rgba(255, 180, 80, 0.04);
+    border-color: rgba(255, 180, 80, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(255, 180, 80, 0.35),
+      0 0 50px rgba(255, 180, 80, 0.12);
+    border-color: rgba(255, 180, 80, 0.7);
+  }
+}
+
+@utility animate-pulse-glow {
+  animation: pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@utility animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Luxury card transition utility */
+.card-hover-luxury {
+  transition:
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-luxury:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in oklab, var(--accent) 70%, transparent);
+  box-shadow: 0 16px 36px -12px rgba(255, 180, 80, 0.15);
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 15px rgba(255, 180, 80, 0.12),
+      0 0 30px rgba(255, 180, 80, 0.04);
+    border-color: rgba(255, 180, 80, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(255, 180, 80, 0.35),
+      0 0 50px rgba(255, 180, 80, 0.12);
+    border-color: rgba(255, 180, 80, 0.7);
+  }
+}
+
+@utility animate-pulse-glow {
+  animation: pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@utility animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Luxury card transition utility */
+.card-hover-luxury {
+  transition:
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-luxury:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in oklab, var(--accent) 70%, transparent);
+  box-shadow: 0 16px 36px -12px rgba(255, 180, 80, 0.15);
 }
 
 /* CSS-only stand-in for the WebGL hero when the device has no GPU context. */
@@ -192,7 +301,9 @@
 .vignette p,
 .vignette h1,
 .vignette span {
-  text-shadow: 0 0 18px var(--background), 0 0 40px var(--background);
+  text-shadow:
+    0 0 18px var(--background),
+    0 0 40px var(--background);
 }
 
 /* Darkened edges behind the WebGL hero; sits under the z-10 copy. */
@@ -229,4 +340,66 @@
   transform-origin: top;
   background: linear-gradient(to bottom, transparent, var(--color-muted-foreground));
   animation: scroll-pulse 2.2s ease-in-out infinite;
+}
+
+/* 35mm Celluloid Film Grain Texture Overlay */
+.film-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Cinema Viewfinder HUD Reticles */
+.viewfinder-corner {
+  position: relative;
+}
+.viewfinder-corner::before,
+.viewfinder-corner::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  border-color: color-mix(in oklab, var(--accent) 70%, transparent);
+}
+.viewfinder-corner-tl::before {
+  top: 12px;
+  left: 12px;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.viewfinder-corner-tr::after {
+  top: 12px;
+  right: 12px;
+  border-top: 1.5px solid;
+  border-right: 1.5px solid;
+}
+.viewfinder-corner-bl::before {
+  bottom: 12px;
+  left: 12px;
+  border-bottom: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.viewfinder-corner-br::after {
+  bottom: 12px;
+  right: 12px;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+/* Sprocket holes for 35mm Filmstrip */
+.sprocket-border-t {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.15) 3px, transparent 3.5px);
+  background-size: 20px 10px;
+  background-repeat: repeat-x;
+  background-position: center top;
+}
+.sprocket-border-b {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.15) 3px, transparent 3.5px);
+  background-size: 20px 10px;
+  background-repeat: repeat-x;
+  background-position: center bottom;
 }

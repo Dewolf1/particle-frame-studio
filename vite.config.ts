@@ -12,4 +12,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  ...(process.env.RENDER || process.env.NITRO_PRESET === "node-server"
+    ? { nitro: { preset: "node-server" } }
+    : {}),
 });

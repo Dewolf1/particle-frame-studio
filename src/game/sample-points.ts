@@ -12,7 +12,11 @@ export interface SampledCloud {
  * triangle area, then recenters and scales the cloud so its largest dimension
  * is `targetSize`. One-time CPU work done right after the GLB loads.
  */
-export function sampleSurfacePoints(root: THREE.Object3D, count: number, targetSize: number): SampledCloud {
+export function sampleSurfacePoints(
+  root: THREE.Object3D,
+  count: number,
+  targetSize: number,
+): SampledCloud {
   root.updateMatrixWorld(true);
   const parts: THREE.BufferGeometry[] = [];
   root.traverse((obj) => {
