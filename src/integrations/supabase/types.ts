@@ -14,13 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      booking_inquiries: {
+        Row: {
+          client_name: string
+          created_at: string
+          email: string
+          id: string
+          inquiry_draft: string
+          location: string
+          preferred_date: string | null
+          project_description: string
+          project_type: string
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          email: string
+          id?: string
+          inquiry_draft: string
+          location: string
+          preferred_date?: string | null
+          project_description: string
+          project_type: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          inquiry_draft?: string
+          location?: string
+          preferred_date?: string | null
+          project_description?: string
+          project_type?: string
+        }
+        Relationships: []
+      }
+      booking_inquiry_rate_limits: {
+        Row: {
+          rate_key: string
+          request_count: number
+          window_started_at: string
+        }
+        Insert: {
+          rate_key: string
+          request_count?: number
+          window_started_at?: string
+        }
+        Update: {
+          rate_key?: string
+          request_count?: number
+          window_started_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_booking_inquiry_rate_limit: {
+        Args: { p_rate_key: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
