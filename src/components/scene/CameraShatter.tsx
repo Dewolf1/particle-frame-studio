@@ -288,9 +288,14 @@ export function CameraShatter({ shattered, onPhaseChange, onReady }: CameraShatt
   useFrame((state, deltaRaw) => {
     const dt = Math.min(deltaRaw, 0.05);
     if (outer.current) {
+      const isPhone = state.size.width < 600;
+      const isShortScreen = state.size.height < 900;
+      const sceneScale = isPhone ? 0.56 : isShortScreen ? 0.82 : 1;
+      outer.current.scale.setScalar(sceneScale);
       outer.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.12;
       outer.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.035;
-      outer.current.position.y = -0.08 + Math.sin(state.clock.elapsedTime * 0.55) * 0.035;
+      const restingY = isPhone ? -0.62 : isShortScreen ? -0.38 : -0.08;
+      outer.current.position.y = restingY + Math.sin(state.clock.elapsedTime * 0.55) * 0.035;
     }
 
     if (phase.current === "exploded") {
